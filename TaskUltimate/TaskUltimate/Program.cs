@@ -5,6 +5,8 @@ using System.Text;
 using TaskUltimate.Models;
 using Microsoft.AspNetCore.Identity;
 using TaskUltimate.DependancyInjection;
+using Mandrill;
+using TaskUltimate.ViewModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddDbContext<ApplicatoinDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DbContext")));
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);

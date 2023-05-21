@@ -13,9 +13,11 @@ namespace TaskUltimate.Controllers
     public class ReservationController : ControllerBase
     {
         private readonly IReservationService _reservation;
-        public ReservationController(IReservationService reservation)
+        private readonly ISendMessageService _sendMessage;
+        public ReservationController(IReservationService reservation, ISendMessageService sendMessage)
         {
             _reservation = reservation;
+            _sendMessage = sendMessage;
         }
         [HttpPost]
         [Route(nameof(AddReservation))]
@@ -27,10 +29,25 @@ namespace TaskUltimate.Controllers
         }
         [HttpPost]
         [Route(nameof(AddReservationDetails))]
-        public IActionResult AddReservationDetails([Required][FromBody] ReservationDetailsDto reservationDetails)
+        public async Task<IActionResult> AddReservationDetails([Required][FromBody] ReservationDetailsDto reservationDetails)
         {
             bool result = _reservation.AddReservationDetails(reservationDetails);
-            if (result == true) return Ok("Success");
+            string Messagebody = "PersonCount : " + reservationDetails.PersonCount +
+                "<br> Description : " + reservationDetails.Description + 
+                "<br> ReservationTime : " + reservationDetails.ReservationTime+
+                "<br> ReservationID : "+reservationDetails.ReservationId;
+            if (result == true)
+            {
+                await _sendMessage.SendEmailMessage(new MailRequest
+                {
+                    ToEmail = "mohamedazez238@gmail.com",
+                    Subject = "Message",
+                    Body = Messagebody,
+                });
+
+                _sendMessage.SendWhatsAppMessage("+201144472548", Messagebody);
+                return Ok("Success");
+            }
             else return BadRequest();
         }
     }
